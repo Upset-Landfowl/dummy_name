@@ -48,18 +48,23 @@ def create_post(post: schemas.PostCreate, current_user: models.User = Depends(jw
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
-    stmt = (select(models.Post.id, 
-                   models.Post.title, 
-                   models.Post.content, 
-                   models.Post.published,
-                   models.Post.rating, 
-                   models.Post.created_at,
-                   models.User.email.label("created_by"),
-                   func.count(models.Vote.post_id).label("votes"))
-            .join(models.User, models.Post.user_id == models.User.id)
-            .join(models.Vote, models.Post.id == models.Vote.post_id)
-            .where(models.Post.id == new_post.id)
-            .group_by(models.Post.id, models.User.id))
+    stmt = (
+    select(
+        models.Post.id, 
+        models.Post.title, 
+        models.Post.content, 
+        models.Post.published,
+        models.Post.rating, 
+        models.Post.created_at,
+        models.User.email.label("created_by"),
+        func.count(models.Vote.post_id).label("votes")
+    )
+    .join(models.User, models.Post.user_id == models.User.id)      
+    .outerjoin(models.Vote, models.Post.id == models.Vote.post_id) 
+    .where(models.Post.id == new_post.id)
+    .group_by(models.Post.id, models.User.id)
+)
+
     postt = db.execute(stmt).mappings().one()
     return postt
 
