@@ -13,7 +13,7 @@ router = APIRouter(
 )
 
 
-@router.post("/create-account", status_code=status.HTTP_200_OK, response_model=schemas.UserOut)
+@router.post("/create-account", status_code=status.HTTP_200_OK)
 def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     hashed_password = utils.hash_password(user.password)
     new_user = models.User(
